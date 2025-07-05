@@ -2,6 +2,7 @@
 #include <set>
 #include <cstring>
 #include <algorithm>
+#include <random>
 #include "../fixAlloc.h"
 
 TEST(FixedAllocatorTest, ExhaustiveAllocation) {
@@ -110,7 +111,9 @@ TEST(FixedAllocatorTest, RandomAllocFreeOrder) {
     for (int i = 0; i < NUM_BLOCKS; ++i) {
         blocks.push_back(allocator.my_malloc());
     }
-    std::random_shuffle(blocks.begin(), blocks.end());
+    std::random_device rd;
+    std::mt19937 g(rd());
+    std::shuffle(blocks.begin(), blocks.end(), g);
     for (auto &b : blocks) {
         EXPECT_TRUE(allocator.my_free(b));
     }
