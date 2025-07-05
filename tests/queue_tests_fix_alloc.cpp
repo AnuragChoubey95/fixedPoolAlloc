@@ -57,6 +57,7 @@ TEST(MessageQueueFixAllocTest, NoMemoryLeaksUnderFullCycle) {
     for (int i = 0; i < QUEUE_MAX_SIZE; ++i) ASSERT_TRUE(q.dequeue(out));
     EXPECT_EQ(q.size(), 0);
     ASSERT_TRUE(q.enqueue(msg)); 
+}
 
 TEST(MessageQueueFixAllocTest, AllocatorNeverOvercommits) {
     MessageQueueFixAlloc q;
