@@ -1,0 +1,4 @@
+googletest/
+build/
+gtest-install/
+dummy
