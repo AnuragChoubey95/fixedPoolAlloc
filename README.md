@@ -1,8 +1,8 @@
 # fixedPoolAlloc
 
 🚧 Coming Soon
-Thread-Safe Allocations: lock-free and atomics-based synchronization for safe concurrent access.
-Hardware-Aware Pool Layout: memory pool layout optimized for cacheline alignment and reduced contention on modern CPU architectures.
+- Thread-Safe Allocations: lock-free and atomics-based synchronization for safe concurrent access.
+- Hardware-Aware Pool Layout: memory pool layout optimized for cacheline alignment and reduced contention on modern CPU architectures.
 
 A fixed-size memory allocator and message queue benchmark suite for real-time systems.
 Designed to test performance-critical memory management patterns in embedded and
