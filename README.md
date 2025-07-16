@@ -1,84 +1,130 @@
 # fixedPoolAlloc
 
-🚧 Coming Soon
-- Thread-Safe Allocations: lock-free and atomics-based synchronization for safe concurrent access.
-- Hardware-Aware Pool Layout: memory pool layout optimized for cacheline alignment and reduced contention on modern CPU architectures.
+A fixed-size, bitmap-based memory allocator and message queue benchmark suite designed for **high-performance**, **multi-threaded**, and **real-time systems**.
 
-A fixed-size memory allocator and message queue benchmark suite for real-time systems.
-Designed to test performance-critical memory management patterns in embedded and
-low-latency applications.
+This project focuses on **zero-dynamic-allocation memory management**, offering fast, deterministic `O(1)` allocations suitable for embedded, low-latency, or safety-critical applications.
+
+---
+
 ## Project Structure
-```
+
+```markdown
 fixedPoolAlloc/
-fixAlloc.h msgQueueFixAlloc.h msgQueueStd.h sim_benchmark.cpp 
-
-  tests/
-    allocator_tests.cpp # GTest suite for FixedAllocator
-    queue_tests_fix_alloc.cpp # GTest suite for message queue
-
-  .gitignore 
-  CMakeLists.txt # Build system using CMake 3.10+
-  README.md # You're reading this
+├── fixAlloc.h               # Fixed-size memory allocator with atomic metadata
+├── single_thread_sim/
+│   ├── msgQueueFixAlloc.h   # Fixed allocator queue (single-threaded)
+│   ├── msgQueueStd.h        # Standard allocator queue (for comparison)
+│   └── sim_benchmark.cpp    # Single-threaded benchmark driver
+├── tests/
+│   ├── allocator_tests.cpp           # GoogleTest suite for Fixed Allocator
+│   └── queue_tests_fix_alloc.cpp     # GoogleTest suite for message queue
+├── CMakeLists.txt
+└── README.md
 ```
-## Build Instructions
+
+---
+
+## ⚙Build Instructions
+
 ### Prerequisites
-- CMake 3.10+
-- A C++ compiler (GCC, Clang, or Apple Clang)
+
+* CMake 3.10+
+* C++17 compatible compiler (GCC, Clang, Apple Clang)
+
 ### Build
+
 ```bash
 git clone https://github.com/AnuragChoubey95/fixedPoolAlloc.git
 cd fixedPoolAlloc
 mkdir build && cd build
 cmake ..
-make -j
+make -j `nproc`
 ```
+
+---
+
 ## Running Tests
+
+Unit tests for allocator correctness and queue FIFO behavior:
+
 ```bash
 ./allocator_tests
 ./queue_tests_fix_alloc
 ```
+
+---
+
 ## Running Benchmarks
+
+### Single-threaded Throughput Simulation:
+
 ```bash
 ./sim_benchmark
 ```
+
 Sample output:
-```
+
+```plaintext
 [Fixed Allocator]
 Sent: 100000
 Dropped: 0
 Received: 100000
 Final Q size: 0
-Duration: 17xxx us
+Duration: 17xx us
+
 [Std Allocator]
 Sent: 100000
 Dropped: 0
 Received: 100000
 Final Q size: 0
-Duration: 40xxx us
+Duration: 20xx us
 ```
+
+### Multi-threaded Benchmark:
+
+Coming soon: `sim_benchmark_mt` — benchmarks the atomic, lock-free allocator performance under thread contention.
+
+---
+
 ## Module Breakdown
-### fixAlloc.h
-- Fixed-size memory allocator with a bitmap metadata pool.
-- O(1) allocation and deallocation.
-- No dynamic allocation, thread-safe behavior not guaranteed.
-### msgQueueFixAlloc.h
-- Lock-free circular queue using fixed allocator.
-- Suitable for real-time systems where malloc is forbidden.
-### msgQueueStd.h
-- Identical API but uses heap (new/delete).
-- For baseline performance comparison only.
-### sim_benchmark.cpp
-- Measures enqueue/dequeue throughput under high volume.
-- Times both allocators for fair comparison.
+
+### `fixAlloc.h`
+
+* Fixed-size memory allocator with **atomic bitfield metadata**.
+* Fast `claimFirstFreeIdx()` and `releaseIdx()` using `compare_exchange_weak`.
+* **Thread-safe** with relaxed memory ordering optimizations.
+* Designed for **zero dynamic allocations**, **constant-time** operations.
+
+### `msgQueueFixAlloc.h`
+
+* Circular queue using `fixAlloc.h`, zero heap allocations.
+* Focused on low-latency single-threaded scenarios.
+
+### `msgQueueStd.h`
+
+* Same API as `msgQueueFixAlloc.h` but uses standard `new/delete` allocation.
+* Serves as a **performance baseline**.
+
+### `sim_benchmark.cpp`
+
+* Simulates single-threaded enqueue/dequeue throughput at scale.
+* Compares fixed allocator vs standard allocator.
+
+---
+
 ## Test Coverage
+
 ### Allocator Tests
-- Exhaustive allocation and reuse.
-fixedPoolAlloc README
-- Double frees.
-- Invalid or misaligned frees.
-- Memory integrity after reuse.
-- Index-free pointer-based validation.
+
+* Exhaustive allocation/free cycles.
+* Invalid free detection (double frees, out-of-bound indices).
+* Memory reuse and integrity under stress.
+* Index-free pointer conversion checks.
+
 ### Message Queue Tests
-- FIFO order preservation.
-- Full/empty detection.
-- Stress enqueue/dequeue loops.
+
+* FIFO order guarantee.
+* Full/empty queue detection.
+* High-volume enqueue/dequeue loops.
+
+---
