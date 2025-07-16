@@ -24,7 +24,7 @@ fixedPoolAlloc/
 
 ---
 
-## ⚙Build Instructions
+## Build Instructions
 
 ### Prerequisites
 
