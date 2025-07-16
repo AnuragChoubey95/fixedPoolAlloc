@@ -23,7 +23,7 @@ add_test(NAME FixedAllocatorSuite COMMAND allocator_tests)
 
 add_executable(queue_tests_fix_alloc
     tests/queue_tests_fix_alloc.cpp
-    msgQueueFixAlloc.h
+    single_thread_sim/msgQueueFixAlloc.h
     fixAlloc.h
 )
 
@@ -34,9 +34,9 @@ target_link_libraries(queue_tests_fix_alloc
 )
 
 add_executable(sim_benchmark
-    sim_benchmark.cpp
-    msgQueueFixAlloc.h
-    msgQueueStd.h
+    single_thread_sim/sim_benchmark.cpp
+    single_thread_sim/msgQueueFixAlloc.h
+    single_thread_sim/msgQueueStd.h
     fixAlloc.h
 )
 

@@ -1,5 +1,5 @@
 #include <cstring>
-#include "fixAlloc.h"
+#include "../fixAlloc.h"
 
 #define QUEUE_MAX_SIZE NUM_BLOCKS
 

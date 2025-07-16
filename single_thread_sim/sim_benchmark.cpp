@@ -4,7 +4,7 @@
 #include "msgQueueFixAlloc.h"
 #include "msgQueueStd.h"
 
-#define TICKS 100000
+#define TICKS 10000
 #define MSG_PATTERN 0xAB
 
 class SimRunner {

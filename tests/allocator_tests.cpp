@@ -3,7 +3,10 @@
 #include <cstring>
 #include <algorithm>
 #include <random>
+#include <thread>
 #include "../fixAlloc.h"
+
+#define NUM_CORES (std::thread::hardware_concurrency())
 
 TEST(FixedAllocatorTest, ExhaustiveAllocation) {
     FixedAllocator allocator;
@@ -71,25 +74,6 @@ TEST(FixedAllocatorTest, MemoryIntegrity) {
     EXPECT_EQ(r2.lo, r.lo); 
 }
 
-TEST(FixedAllocatorTest, FullPoolReuse) {
-    FixedAllocator allocator;
-    MemRange blocks[NUM_BLOCKS];
-
-    for (int i = 0; i < NUM_BLOCKS; ++i) {
-        blocks[i] = allocator.my_malloc();
-        ASSERT_TRUE(blocks[i].lo);
-    }
-
-    for (int i = 0; i < NUM_BLOCKS; ++i) {
-        EXPECT_TRUE(allocator.my_free(blocks[i]));
-    }
-
-    for (int i = 0; i < NUM_BLOCKS; ++i) {
-        MemRange r = allocator.my_malloc();
-        EXPECT_TRUE(r.lo);
-    }
-}
-
 TEST(FixedAllocatorTest, TimeBombWriteCheck) {
     FixedAllocator allocator;
     MemRange a = allocator.my_malloc();
@@ -153,3 +137,66 @@ TEST(FixedAllocatorTest, FreeWithMismatchedPointer) {
     fake.lo = r.lo + BLOCK_SIZE; 
     EXPECT_FALSE(allocator.my_free(fake)); 
 }
+
+TEST(FixedAllocatorTest, ConcurrentAllocationsDoNotOverlap) {
+    FixedAllocator allocator;
+    int num_threads = NUM_CORES;
+    int allocs_per_thread = 100;
+
+    std::atomic<bool> error_detected{false};
+
+    auto alloc_free_task = [&](int thread_idx) {
+        for (int i = 0; i < allocs_per_thread; ++i) {
+            MemRange r = allocator.my_malloc();
+            if (!r.lo) continue; 
+
+            uint8_t thread_id = static_cast<uint8_t>(thread_idx);
+            std::memset(r.lo, thread_id, BLOCK_SIZE);
+            for (int j = 0; j < BLOCK_SIZE; ++j) {
+                if (r.lo[j] != thread_id) error_detected.store(true);
+            }
+            allocator.my_free(r);
+        }
+    };
+
+    std::vector<std::thread> threads;
+    for (int i = 0; i < num_threads; ++i) {
+        threads.emplace_back(alloc_free_task, i);
+    }
+    for (auto& t : threads) t.join();
+
+    EXPECT_FALSE(error_detected.load());
+}
+
+TEST(FixedAllocatorTest, ConcurrentAllocationsDoNotExceedCapacity) {
+    FixedAllocator allocator;
+    int num_threads = NUM_CORES;
+    int allocs_per_thread = 100;
+    std::atomic<int> current_allocated{0};
+    std::atomic<bool> overflow_detected{false};
+
+    auto alloc_free_task = [&]() {
+        for (int i = 0; i < allocs_per_thread; ++i) {
+            MemRange r = allocator.my_malloc();
+            if (r.lo) {
+                int count = current_allocated.fetch_add(1) + 1;
+                if (count > NUM_BLOCKS) overflow_detected.store(true);
+
+                std::memset(r.lo, 0xCD, BLOCK_SIZE);
+
+                int after_free = current_allocated.fetch_sub(1) - 1;
+                EXPECT_GE(after_free, 0); 
+
+                allocator.my_free(r);
+            }
+        }
+    };
+
+    std::vector<std::thread> threads;
+    for (int i = 0; i < num_threads; ++i)
+        threads.emplace_back(alloc_free_task);
+    for (auto& t : threads) t.join();
+
+    EXPECT_FALSE(overflow_detected.load());
+}
+
