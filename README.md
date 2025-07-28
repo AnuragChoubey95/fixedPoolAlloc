@@ -13,7 +13,7 @@ fixedPoolAlloc/
 ├── CMakeLists.txt
 ├── README.md
 ├── multi_thread_sim/
-│   ├── pvbuf.cpp                 # Multithreaded ring buffer (WIP or planned)
+│   ├── pvbuf.cpp                 # Multithreaded ring buffer (planned)
 │   └── pvbuf.h
 ├── single_thread_sim/
 │   ├── msgQueueFixAlloc.h        # Message queue using FixedAllocator
