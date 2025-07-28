@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <random>
 #include <thread>
-#include "../fixAlloc.h"
+#include "../src/fixAlloc.h"
 
 #define NUM_CORES (std::thread::hardware_concurrency())
 
