@@ -10,17 +10,24 @@ This project focuses on **zero-dynamic-allocation memory management**, offering 
 
 ```markdown
 fixedPoolAlloc/
-├── fixAlloc.h               # Fixed-size memory allocator with atomic metadata
-├── single_thread_sim/
-│   ├── msgQueueFixAlloc.h   # Fixed allocator queue (single-threaded)
-│   ├── msgQueueStd.h        # Standard allocator queue (for comparison)
-│   └── sim_benchmark.cpp    # Single-threaded benchmark driver
-├── tests/
-│   ├── allocator_tests.cpp           # GoogleTest suite for Fixed Allocator
-│   └── queue_tests_fix_alloc.cpp     # GoogleTest suite for message queue
 ├── CMakeLists.txt
-└── README.md
+├── README.md
+├── multi_thread_sim/
+│   ├── pvbuf.cpp                 # Multithreaded ring buffer (WIP or planned)
+│   └── pvbuf.h
+├── single_thread_sim/
+│   ├── msgQueueFixAlloc.h        # Message queue using FixedAllocator
+│   ├── msgQueueStd.h             # Message queue using malloc/new
+│   └── sim_benchmark.cpp         # Benchmark driver comparing queues
+├── src/
+│   ├── fixAlloc.cpp              # Fixed-size memory allocator implementation
+│   └── fixAlloc.h                # Fixed-size memory allocator interface
+├── tests/
+│   ├── allocator_tests.cpp       # Unit tests for FixedAllocator
+│   └── queue_tests_fix_alloc.cpp # Unit tests for FixedAllocator-backed queue
+
 ```
+
 
 ---
 
