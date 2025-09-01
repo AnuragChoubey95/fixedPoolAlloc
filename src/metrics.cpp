@@ -19,7 +19,28 @@ void Metrics::merge(ThreadMetrics& tm) {
     total_received += tm.received;
 }
 
-// Print summary stats
+static void report_stats(const std::vector<long>& v,
+                         const char* label,
+                         std::ostream& out) {
+    if (v.empty()) return;
+
+    std::vector<long> sorted = v;
+    std::sort(sorted.begin(), sorted.end());
+
+    auto avg = std::accumulate(sorted.begin(), sorted.end(), 0LL) /
+               static_cast<double>(sorted.size());
+
+    auto p50 = sorted[sorted.size() * 50 / 100];
+    auto p95 = sorted[sorted.size() * 95 / 100];
+    auto p99 = sorted[sorted.size() * 99 / 100];
+
+    out << label << " latency (ns): "
+        << "avg=" << std::fixed << std::setprecision(2) << avg
+        << " p50=" << p50
+        << " p95=" << p95
+        << " p99=" << p99 << "\n";
+}
+
 void Metrics::summarize(std::ostream& out) {
     std::lock_guard<std::mutex> lock(mtx);
 
@@ -30,18 +51,6 @@ void Metrics::summarize(std::ostream& out) {
         << "\nDequeue samples: " << all_dequeue_latencies.size()
         << "\n";
 
-  
-    if (!all_enqueue_latencies.empty()) {
-        auto sum = std::accumulate(all_enqueue_latencies.begin(),
-                                   all_enqueue_latencies.end(), 0LL);
-        double avg = static_cast<double>(sum) / all_enqueue_latencies.size();
-        out << "Average enqueue latency: " << std::fixed << std::setprecision(2) << avg << " ns\n";
-    }
-
-    if (!all_dequeue_latencies.empty()) {
-        auto sum = std::accumulate(all_dequeue_latencies.begin(),
-                                   all_dequeue_latencies.end(), 0LL);
-        double avg = static_cast<double>(sum) / all_dequeue_latencies.size();
-        out << "Average dequeue latency: " << std::fixed << std::setprecision(2) << avg << " ns\n";
-    }
+    report_stats(all_enqueue_latencies, "Enqueue", out);
+    report_stats(all_dequeue_latencies, "Dequeue", out);
 }

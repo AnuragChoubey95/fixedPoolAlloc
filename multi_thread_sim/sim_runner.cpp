@@ -38,10 +38,38 @@ void SimRunnerMT<QueueType>::run(const std::string& name) {
     std::cout << "Duration: " << duration << "us\n\n";
 }
 
-int main() {
-    size_t producers = 4;
-    size_t consumers = 3;
-    size_t ticks = 100000;
+int main(int argc, char* argv[]) {
+    if (argc != 4) {
+        std::cerr << "Usage: " << argv[0] << " <num_producers> <num_consumers> <ticks_per_thread>\n"
+                  << "  <num_producers>   Number of producer threads (positive integer)\n"
+                  << "  <num_consumers>   Number of consumer threads (positive integer)\n"
+                  << "  <ticks_per_thread> Number of iterations per thread (positive integer)\n";
+        return 1;
+    }
+
+    size_t producers, consumers, ticks;
+
+    try {
+        producers = std::stoul(argv[1]);
+        consumers = std::stoul(argv[2]);
+        ticks     = std::stoul(argv[3]);
+    } catch (const std::invalid_argument&) {
+        std::cerr << "Error: All arguments must be integers.\n";
+        return 1;
+    } catch (const std::out_of_range&) {
+        std::cerr << "Error: Argument value out of range for unsigned long.\n";
+        return 1;
+    }
+
+    if (producers == 0 || consumers == 0 || ticks == 0) {
+        std::cerr << "Error: All arguments must be positive integers.\n";
+        return 1;
+    }
+
+    std::cout << "Running with "
+              << producers << " producers, "
+              << consumers << " consumers, "
+              << ticks << " ticks per thread.\n\n";
 
     SimRunnerMT<MessageQueueFixAlloc> sim_fix(producers, consumers, ticks);
     sim_fix.run("Fixed Allocator MT");
@@ -51,3 +79,4 @@ int main() {
 
     return 0;
 }
+

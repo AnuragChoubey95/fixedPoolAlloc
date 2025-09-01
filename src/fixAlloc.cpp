@@ -1,7 +1,6 @@
 /* 
     Notes: 
-    >   Why I chose cas_weak vs cas_strong
-        https://devblogs.microsoft.com/oldnewthing/20180330-00/?p=98395
+    >   
 */
 
 #include "fixAlloc.h"
