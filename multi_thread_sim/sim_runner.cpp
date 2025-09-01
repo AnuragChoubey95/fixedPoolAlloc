@@ -1,0 +1,53 @@
+#include "sim_runner_utils.h"
+
+template <typename QueueType>
+void SimRunnerMT<QueueType>::run(const std::string& name) {
+    QueueType queue;
+    Metrics global_metrics;
+
+    auto start = std::chrono::steady_clock::now();
+
+    std::vector<ThreadMetrics> thread_metrics(num_producers + num_consumers);
+    std::vector<std::thread> threads;
+    threads.reserve(num_producers + num_consumers);
+
+    for (size_t p = 0; p < num_producers; ++p) {
+        threads.emplace_back(&SimRunnerMT::produce_loop, this,
+                             p, std::ref(queue), std::ref(thread_metrics[p]));
+    }
+
+    for (size_t c = 0; c < num_consumers; ++c) {
+        threads.emplace_back(&SimRunnerMT::consume_loop, this,
+                             c, std::ref(queue),
+                             std::ref(thread_metrics[num_producers + c]));
+    }
+
+    for (auto& t : threads) {
+        t.join();
+    }
+
+    auto end = std::chrono::steady_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+
+    for (auto& tm : thread_metrics) {
+        global_metrics.merge(tm);
+    }
+
+    std::cout << "[" << name << "]\n";
+    global_metrics.summarize(std::cout);
+    std::cout << "Duration: " << duration << "us\n\n";
+}
+
+int main() {
+    size_t producers = 4;
+    size_t consumers = 3;
+    size_t ticks = 100000;
+
+    SimRunnerMT<MessageQueueFixAlloc> sim_fix(producers, consumers, ticks);
+    sim_fix.run("Fixed Allocator MT");
+
+    SimRunnerMT<MessageQueueStd> sim_std(producers, consumers, ticks);
+    sim_std.run("Std Allocator MT");
+
+    return 0;
+}

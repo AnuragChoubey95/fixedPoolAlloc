@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 #include <cstring>
-#include "../single_thread_sim/msgQueueFixAlloc.h"
+#include "../src/msgQueueFixAlloc.h"
 
 TEST(MessageQueueFixAllocTest, EnqueueIncreasesSize) {
     MessageQueueFixAlloc q;

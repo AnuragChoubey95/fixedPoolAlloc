@@ -2,3 +2,4 @@ googletest/
 build/
 gtest-install/
 dummy
+build/

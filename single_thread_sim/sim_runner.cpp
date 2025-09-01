@@ -1,8 +1,8 @@
 #include <iostream>
 #include <chrono>
 #include <cstring>
-#include "msgQueueFixAlloc.h"
-#include "msgQueueStd.h"
+#include "../src/msgQueueFixAlloc.h"
+#include "../src/msgQueueStd.h"
 
 #define TICKS 10000
 #define MSG_PATTERN 0xAB

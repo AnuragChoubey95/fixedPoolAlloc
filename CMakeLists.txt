@@ -13,14 +13,11 @@ FetchContent_Declare(
   GIT_TAG main
 )
 
-# Only needed for MSVC but harmless to keep
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-
 FetchContent_MakeAvailable(googletest)
 
 enable_testing()
 
-# === Test target: allocator_tests ===
 add_executable(allocator_tests
     tests/allocator_tests.cpp
     src/fixAlloc.cpp
@@ -32,7 +29,6 @@ target_link_libraries(allocator_tests
 )
 add_test(NAME FixedAllocatorSuite COMMAND allocator_tests)
 
-# === Test target: queue_tests_fix_alloc ===
 add_executable(queue_tests_fix_alloc
     tests/queue_tests_fix_alloc.cpp
     src/fixAlloc.cpp
@@ -44,8 +40,14 @@ target_link_libraries(queue_tests_fix_alloc
 )
 add_test(NAME MessageQueueSuite COMMAND queue_tests_fix_alloc)
 
-# === Benchmark: sim_benchmark ===
-add_executable(sim_benchmark
-    single_thread_sim/sim_benchmark.cpp
+add_executable(sim_benchmark_st
+    single_thread_sim/sim_runner.cpp
     src/fixAlloc.cpp
+)
+
+add_executable(sim_benchmark_mt
+    multi_thread_sim/sim_runner.cpp
+    multi_thread_sim/sim_runner_utils.cpp
+    src/fixAlloc.cpp
+    src/metrics.cpp
 )

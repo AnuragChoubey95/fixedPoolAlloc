@@ -1,6 +1,7 @@
 #include <cstdint>
 #include <cstring>
 #include <new>
+#include <mutex>
 
 #define BLOCK_SIZE 64
 #define QUEUE_MAX_SIZE 64
@@ -10,6 +11,8 @@ public:
     MessageQueueStd() : head(0), tail(0), count(0) {}
 
     bool enqueue(const uint8_t* data) {
+        std::lock_guard<std::mutex> lock(mtx);
+
         if (count >= QUEUE_MAX_SIZE) return false;
 
         uint8_t* block = new (std::nothrow) uint8_t[BLOCK_SIZE];
@@ -20,10 +23,13 @@ public:
 
         tail = (tail + 1) % QUEUE_MAX_SIZE;
         ++count;
+
         return true;
     }
 
     bool dequeue(uint8_t* out_data) {
+        std::lock_guard<std::mutex> lock(mtx);
+
         if (count == 0) return false;
 
         uint8_t* block = entries[head];
@@ -32,10 +38,12 @@ public:
 
         head = (head + 1) % QUEUE_MAX_SIZE;
         --count;
+
         return true;
     }
 
     size_t size() const {
+        std::lock_guard<std::mutex> lock(mtx);
         return count;
     }
 
@@ -44,4 +52,5 @@ private:
     size_t head;
     size_t tail;
     uint16_t count;
+    mutable std::mutex mtx;  // mutable so size() can lock
 };

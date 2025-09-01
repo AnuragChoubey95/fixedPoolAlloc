@@ -1,20 +1,20 @@
 #include <cstring>
+#include <mutex>
 #include "../src/fixAlloc.h"
 
 #define QUEUE_MAX_SIZE NUM_BLOCKS
 
-class MessageQueueFixAlloc{
-    
+class MessageQueueFixAlloc {
 public:
-    MessageQueueFixAlloc() {
-        head = tail = count = 0;
-    }
+    MessageQueueFixAlloc() : head(0), tail(0), count(0) {}
 
     bool enqueue(const uint8_t* data) {
+        std::lock_guard<std::mutex> lock(mtx);
+
         if (count >= QUEUE_MAX_SIZE) return false;
 
         MemRange r = alloc_.my_malloc();
-        if (!r.lo) return false; 
+        if (!r.lo) return false;
 
         memcpy(r.lo, data, BLOCK_SIZE);
         entries[tail] = r;
@@ -25,12 +25,14 @@ public:
     }
 
     bool dequeue(uint8_t* out_data) {
+        std::lock_guard<std::mutex> lock(mtx);
+
         if (count == 0) return false;
 
         MemRange r = entries[head];
         memcpy(out_data, r.lo, BLOCK_SIZE);
         bool freed = alloc_.my_free(r);
-        if (!freed) return false; 
+        if (!freed) return false;
 
         head = (head + 1) % QUEUE_MAX_SIZE;
         --count;
@@ -38,9 +40,9 @@ public:
     }
 
     size_t size() const {
+        std::lock_guard<std::mutex> lock(mtx);
         return count;
     }
-
 
 private:
     MemRange entries[QUEUE_MAX_SIZE];
@@ -48,4 +50,5 @@ private:
     size_t head;
     size_t tail;
     uint16_t count;
+    mutable std::mutex mtx;  
 };
