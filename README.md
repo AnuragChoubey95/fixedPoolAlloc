@@ -147,7 +147,7 @@ This benchmark simulates a realistic message-passing system to compare allocator
 
 ## Sample Results (selected runs)
 
-> Hardware: user’s 8-core machine; queue size 64; block size 64 bytes.
+> Hardware: Apple M2; 8 Cores
 
 ### 1 producer, 7 consumers, 30k ticks each
 
