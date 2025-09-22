@@ -212,13 +212,3 @@ Duration: 12,046,154 µs
 * Why I chose cas_weak vs cas_strong: https://devblogs.microsoft.com/oldnewthing/20180330-00/?p=98395
 
 ---
-
-## Roadmap / Next Upgrades
-
-* CSV/JSON export of metrics for plotting
-* Histogram buckets for latency distribution
-* Thread-scaling sweeps (1..N) with plots
-* Pure allocator microbenchmarks (no queue) for upper-bound comparisons
-* Batch alloc/free patterns and randomized lifetimes to stress fragmentation
-
----
